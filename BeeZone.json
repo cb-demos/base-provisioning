@@ -1,0 +1,92 @@
+{
+
+  "projectName" : "BeeZone Demo",
+
+  "applicationName" : "Account Statements",
+
+  "releaseName" : "BeeZone Release",
+
+  "environmentName" : "QA",
+
+  "build": {
+
+        "durationInMinutes": 12,
+
+        "trendUp": true,
+
+        "successCount": 25,
+
+        "failureCount": 3
+
+  },
+
+  "systemTest": {
+
+    "durationInMinutes": 15,
+
+    "trendUp": false,
+
+    "successCount": 70,
+
+    "failureCount": 7
+
+  },
+
+  "unitTest": {
+
+    "durationInMillis": 250,
+
+    "trendUp": true,
+
+    "successCount": 3000,
+
+    "failureCount": 25
+
+  },
+
+  "feature": {
+
+    "trendUp": true,
+
+    "openCount": 12,
+
+    "storiesWithStoryPoints" : 33,
+
+    "closedCount": 21
+
+  },
+
+  "defect": {
+
+    "trendUp": true,
+
+    "openCount": 15,
+
+    "closedCount": 21
+
+  },
+
+  "incident": {
+
+    "durationInMillis": 86400000,
+
+    "trendUp": true,
+
+    "openCount": 6,
+
+    "closedCount": 5
+
+  },
+
+  "deployment": {
+
+    "durationInMillis": 2000000,
+
+    "trendUp": true,
+
+    "successCount": 10,
+
+    "failureCount": 2
+  }
+}
+
