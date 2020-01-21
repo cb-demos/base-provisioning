@@ -2,8 +2,8 @@ project 'BeeZone Demo', {
   release 'BeeZone Release', {
     description = ''
     disableMultipleActiveRuns = '0'
-    plannedEndDate = '2019-12-14'
-    plannedStartDate = '2019-11-30'
+    plannedEndDate = '2020-02-07'
+    plannedStartDate = '2020-01-10'
     projectName = 'BeeZone Demo'
     timeZone = null
 

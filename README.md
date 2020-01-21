@@ -1,8 +1,8 @@
 # Thunder Demo deployment script
 
-This is the depository for the shell scripts, tools, resources needed to provision a new 
-demo environment. The script provisions two clusters in GKE, then installs Core in one and 
-Flow in the other. With the products installed, it uses some DSL, Groovy, and JSON files
+This is the depository for the shell scripts, tools, and other resources needed to provision a new 
+demo environment. The script provisions a cluster in GKE, then installs Core and 
+Flow in them. With the products installed, it uses some DSL, Groovy, and JSON files
 to initialize a project, release, and pipeline (as well as associated data) in Flow. 
 
 ## Feedback
@@ -16,21 +16,34 @@ or create a ticket on
 ## Prerequisites
 
 If you're going to run this yourself, you need to have the 
-[gcloud CLI tools](https://cloud.google.com/sdk/docs/quickstarts) installed. 
+[`gcloud` CLI tools](https://cloud.google.com/sdk/docs/quickstarts) installed. 
 Once they're installed, run `gcloud auth login` to log in to your GCP account. 
 
 You also need V2 of [Helm](https://v2.helm.sh) installed. The script handles the 
 details of installing Tiller
 and initializing Helm, but you have to install Helm itself before the script will work. 
 
+## What the script does
+
+Here's the rundown on what the script does. See the actual code for more details.
+
+1. Creates a cluster with `gcloud container clusters create`.
+1. Configures `kubectl` to work with the new cluster.
+1. Sets up `tiller` and `helm`.
+1. Installs `nginx` via a Helm chart to set up the ingress for Core.
+1. Installs Core via a Helm chart and waits for it to initialize.
+1. Uses `kubectl exec` to get the `initialAdminPassword` value from the Core pod.
+1. Uses a YAML file to install the Nexus OSS artifact repository.
+1. Installs Flow via a Helm chart and waits for it to initialize.
+1. Uses `kubectl exec ectool evalDsl` to process several DSL and Groovy files to create releases, pipelines, and data in Flow.
+1. Prints the Core and Flow credentials and exits.
+
 ## Beware!
 
-This thing takes a while. At least 20 minutes. Part of that is the provisioning time
-for the two clusters (I need to do those in parallel) and part of it is waiting for 
-Flow to initialize (I need to figure ou thow to wait
-until running `ectool getServerStatus` against the Flow
-installation returns `running`). Suggestions for streamlining the script
-are enthusiastically welcomed. 
+This thing takes a while. Google takes a few minutes to provision a cluster, and
+Flow and Core (especially Flow) take a while to get up and running.
+An obvious enhancement would be to modify the script so that Core and Flow are
+installed concurrently. (Looking forward to your PRs.)
 
 ## Running the script
 
@@ -44,14 +57,11 @@ To run the script you need a *name* for the cluster and a *GCP region*. Here's a
 ./provisionCluster.sh doug us-east1-b
 ```
 
-This creates two clusters, `doug-core` and `doug-flow`, in the `us-east1-b` region. The output of the script
+This creates a cluster named `doug` in the `us-east1-b` region. The output of the script
 shows the details of the user IDs and passwords you'll need to get started. 
-You'll see something like this: 
+When it's finished, you'll see something like this: 
 
 ```
-------------------------------------------------------------------
-----> Two Kuberenetes clusters have been provisioned, one with 
-      Core (doug-core) and one with Flow (doug-flow). 
 ------------------------------------------------------------------
 ----> Using Core: 
       Your initial password is 2057e0b03d904e798a5194a1f1fc2742
@@ -62,3 +72,42 @@ You'll see something like this:
       Visit https://4.3.2.1/auth/# to log in.
 ------------------------------------------------------------------
 ```
+
+## No rest for the wicked
+
+Lots of things to do for the basic provisioning script. First of all, there are a bunch
+of Jenkins plugins that I currently need to install manually. Here are their IDs:
+
+* `configuration-as-code`
+* `electricflow`
+* `git`
+* `git-client`
+* `github`
+* `github-api`
+* `github-branch-source`
+* `maven-plugin`
+* `nexus-artifact-uploader`
+* `workflow-api`
+* `workflow-basic-steps`
+* `workflow-cps`
+* `workflow-durable-task-step`
+* `workflow-job`
+* `workflow-multibranch`
+* `workflow-scm-step`
+* `workflow-step-api`
+* `workflow-support`
+
+I need to set up CasC so that those plugins are automatically installed as part of the 
+script. 
+
+On the Flow side, I need to install the `unplug`, `EC-AuditReports`, and `EC-Slack` plugins. 
+They need to be installed in that order, and `EC-Slack` is configured differently than 
+any other Flow plugin I've worked with. All of that needs to be automated. 
+
+As we go forward, we have to be able to store pipelines, configurations, environments, 
+releases, etc. in GitHub so that they can automatically be installed as part of the 
+provisioning process. 
+
+Finally, **_DATA_** is just as important as having a running cluster and a working 
+infrastructure. If the data doesn't help us tell a story, everything else is useless. 
+A Flow dashboard filled with boxes that read "No Data Available" is a failure. Some of the data work is already done, other things will probably take a while. 
