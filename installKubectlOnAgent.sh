@@ -1,38 +1,35 @@
-# Install kubectl on Flow agent
+kubectl create namespace dev
+kubectl create namespace qa
+kubectl create namespace preprod
 
-# Login into flow-bound-agent pod
+FLOW_AGENT_POD=$(kubectl get pods | grep flow-bound-agent | awk '{print $1}')
+FLOW_AGENT_STATUS=$(kubectl exec $FLOW_AGENT_POD -- /opt/cbflow/health-check)
+TARGET_STATUS="OK"
 
-apt-get update
+echo '----> Waiting for the Agent server to come online'
+until [ "$FLOW_AGENT_STATUS" == "$TARGET_STATUS" ]; do 
+  sleep 15;
+  FLOW_AGENT_STATUS=$(kubectl exec $FLOW_AGENT_POD -- /opt/cbflow/health-check);
+done
 
-# Get basic unix tools
-apt-get -y install curl
-apt-get -y install vim
-apt-get -y install git
-
-# Install kubectl
-apt-get install -y apt-transport-https
-apt-get install -y gnupg
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" |  tee -a /etc/apt/sources.list.d/kubernetes.list
-apt-get update
-apt-get install -y kubectl
-
-# Install python3 needed for gcloud
-apt-get -y install python3
-apt-get -y install python3-pip
-
-# Install gcloud
-apt-get install apt-transport-https ca-certificates gnupg
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-curl https://sdk.cloud.google.com > gcloud_install.sh
-bash gcloud_install.sh --disable-prompts --install-dir=/usr/lib
-
-# Configure kubectl
-su - cbflow
-echo 'export PATH=$PATH:/opt/google-cloud-sdk/bin' >> ~/.bashrc
-source ~/.bashrc
-mkdir .kube && cd .kube
-cat << EOF > config
+echo '----> Getting curl, git and vim'
+kubectl exec $FLOW_AGENT_POD -- apt-get update
+kubectl exec $FLOW_AGENT_POD -- apt-get -y install curl vim git
+echo '----> Installing kubectl'
+kubectl exec $FLOW_AGENT_POD -- apt-get -y install apt-transport-https gnupg ca-certificates
+kubectl exec $FLOW_AGENT_POD -- curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -
+kubectl exec $FLOW_AGENT_POD -- echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" |  tee -a /etc/apt/sources.list.d/kubernetes.list
+kubectl exec $FLOW_AGENT_POD -- apt-get update
+kubectl exec $FLOW_AGENT_POD -- apt-get install -y kubectl
+echo '----> Installing python3 and gcloud'
+kubectl exec $FLOW_AGENT_POD -- apt-get -y install python3
+kubectl exec $FLOW_AGENT_POD -- curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+kubectl exec $FLOW_AGENT_POD -- curl https://sdk.cloud.google.com > gcloud_install.sh
+kubectl exec $FLOW_AGENT_POD -- bash gcloud_install.sh --disable-prompts --install-dir=/usr/lib
+echo '----> Setting up Flow agent kubectl authentication'
+kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "echo 'export PATH=\$PATH:/opt/google-cloud-sdk/bin' >> ~/.bashrc"
+kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "mkdir .kube"
+cat << EOF > kube_config
 apiVersion: v1
 clusters:
 - cluster:
@@ -71,12 +68,6 @@ users:
         token-key: '{.credential.access_token}'
       name: gcp
 EOF
-# 
-
-gcloud auth login
-# Some manual stuff
-
-# create qa and preprod contexts
-kubectl create namespace dev
-kubectl create namespace qa
-kubectl create namespace preprod
+kubectl cp kube_config $FLOW_AGENT_POD:/home/cbflow/.kube/config
+kubectl exec $FLOW_AGENT_POD -- chown cbflow:cbflow /home/cbflow/.kube/config
+#kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "gcloud auth login"
