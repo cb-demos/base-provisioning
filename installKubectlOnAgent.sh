@@ -17,7 +17,7 @@ echo '----> Getting curl, git and vim'
 kubectl exec $FLOW_AGENT_POD -- apt-get update
 kubectl exec $FLOW_AGENT_POD -- apt-get -y install curl vim git
 echo '----> Installing python3 and gcloud'
-kubectl exec $FLOW_AGENT_POD -- apt-get -y install python3
+kubectl exec $FLOW_AGENT_POD -- apt-get -y install python3 apt-transport-https ca-certificates gnupg
 kubectl exec $FLOW_AGENT_POD -- bash -c 'curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -'
 kubectl exec $FLOW_AGENT_POD -- bash -c 'curl https://sdk.cloud.google.com > gcloud_install.sh'
 kubectl exec $FLOW_AGENT_POD -- bash gcloud_install.sh --disable-prompts --install-dir=/opt
