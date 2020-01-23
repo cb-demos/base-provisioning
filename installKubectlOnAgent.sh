@@ -33,9 +33,8 @@ kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "echo 'export PATH=\$PATH:/opt/go
 
 for env in $FLOW_ENVIRONMENTS
 do
-	kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "/opt/google-cloud-sdk/bin/gcloud container clusters get-credentials $GCP_CLUSTER_NAME --zone $ZONE --project $GCP_PROJECT"
-	kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "kubectl config rename-context gke_${GCP_PROJECT}_${ZONE}_${GCP_CLUSTER_NAME} $env"
-	kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "kubectl config set contexts.${env}.namespace $env"
+	kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "\
+		/opt/google-cloud-sdk/bin/gcloud container clusters get-credentials $GCP_CLUSTER_NAME --zone $ZONE --project $GCP_PROJECT && \
+		kubectl config rename-context gke_${GCP_PROJECT}_${ZONE}_${GCP_CLUSTER_NAME} $env && \
+		kubectl config set contexts.${env}.namespace $env"
 done
-
-
