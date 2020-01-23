@@ -17,15 +17,15 @@ kubectl exec $FLOW_AGENT_POD -- apt-get update
 kubectl exec $FLOW_AGENT_POD -- apt-get -y install curl vim git
 echo '----> Installing kubectl'
 kubectl exec $FLOW_AGENT_POD -- apt-get -y install apt-transport-https gnupg ca-certificates
-kubectl exec $FLOW_AGENT_POD -- curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -
-kubectl exec $FLOW_AGENT_POD -- echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" |  tee -a /etc/apt/sources.list.d/kubernetes.list
+kubectl exec $FLOW_AGENT_POD -- bash -c 'curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -'
+kubectl exec $FLOW_AGENT_POD -- bash -c 'echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" |  tee -a /etc/apt/sources.list.d/kubernetes.list'
 kubectl exec $FLOW_AGENT_POD -- apt-get update
 kubectl exec $FLOW_AGENT_POD -- apt-get install -y kubectl
 echo '----> Installing python3 and gcloud'
 kubectl exec $FLOW_AGENT_POD -- apt-get -y install python3
-kubectl exec $FLOW_AGENT_POD -- curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-kubectl exec $FLOW_AGENT_POD -- curl https://sdk.cloud.google.com > gcloud_install.sh
-kubectl exec $FLOW_AGENT_POD -- bash gcloud_install.sh --disable-prompts --install-dir=/usr/lib
+kubectl exec $FLOW_AGENT_POD -- bash -c 'curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -'
+kubectl exec $FLOW_AGENT_POD -- bash -c 'curl https://sdk.cloud.google.com > gcloud_install.sh'
+kubectl exec $FLOW_AGENT_POD -- bash gcloud_install.sh --disable-prompts --install-dir=/opt
 echo '----> Setting up Flow agent kubectl authentication'
 kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "echo 'export PATH=\$PATH:/opt/google-cloud-sdk/bin' >> ~/.bashrc"
 kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "mkdir .kube"
@@ -71,3 +71,4 @@ EOF
 kubectl cp kube_config $FLOW_AGENT_POD:/home/cbflow/.kube/config
 kubectl exec $FLOW_AGENT_POD -- chown cbflow:cbflow /home/cbflow/.kube/config
 #kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "gcloud auth login"
+echo -e "kubectl exec -it $FLOW_AGENT_POD -- bash\nsu - cbflow\ngcloud auth login\nkubectl get nodes"
