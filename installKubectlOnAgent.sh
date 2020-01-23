@@ -16,17 +16,13 @@ done
 echo '----> Getting curl, git and vim'
 kubectl exec $FLOW_AGENT_POD -- apt-get update
 kubectl exec $FLOW_AGENT_POD -- apt-get -y install curl vim git
-echo '----> Installing kubectl'
-kubectl exec $FLOW_AGENT_POD -- apt-get -y install apt-transport-https gnupg ca-certificates
-kubectl exec $FLOW_AGENT_POD -- bash -c 'curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -'
-kubectl exec $FLOW_AGENT_POD -- bash -c 'echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" |  tee -a /etc/apt/sources.list.d/kubernetes.list'
-kubectl exec $FLOW_AGENT_POD -- apt-get update
-kubectl exec $FLOW_AGENT_POD -- apt-get install -y kubectl
 echo '----> Installing python3 and gcloud'
 kubectl exec $FLOW_AGENT_POD -- apt-get -y install python3
 kubectl exec $FLOW_AGENT_POD -- bash -c 'curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -'
 kubectl exec $FLOW_AGENT_POD -- bash -c 'curl https://sdk.cloud.google.com > gcloud_install.sh'
 kubectl exec $FLOW_AGENT_POD -- bash gcloud_install.sh --disable-prompts --install-dir=/opt
+echo '----> Installing kubectl'
+kubectl exec $FLOW_AGENT_POD -- bash /opt/google-cloud-sdk/bin/gcloud --quiet components install kubectl
 echo '----> Setting up Flow agent kubectl authentication and contexts'
 kubectl exec $FLOW_AGENT_POD -- su - cbflow -c "echo 'export PATH=\$PATH:/opt/google-cloud-sdk/bin' >> ~/.bashrc"
 
