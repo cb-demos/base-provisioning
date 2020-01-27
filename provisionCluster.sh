@@ -8,7 +8,6 @@ gcloud beta container clusters create $1 \
 --issue-client-certificate \
 --machine-type=n1-standard-8 \
 --num-nodes=1 \
---password=cloudbeesdemoenv \
 --region=$2 \
 --username=admin \
 --verbosity=none \
@@ -125,6 +124,10 @@ until [ "$FLOW_SERVER_STATUS" == "$TARGET_STATUS" ]; do
   sleep 15;
   FLOW_SERVER_STATUS=$(kubectl exec $FLOW_SERVER_POD -- /opt/cbflow/health-check);
 done
+
+# Patching agent deployment
+kubectl patch deployment flow-bound-agent -p "$(cat flowAgentPatch.yaml)"
+
 
 # Create Users and resourcePools
 echo '----> Adding users to Flow'
