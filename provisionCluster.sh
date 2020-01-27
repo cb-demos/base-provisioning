@@ -12,7 +12,7 @@ gcloud container clusters create $1 \
 --region=$2 \
 --username=admin \
 --verbosity=none \
---scopes=cloud-platform
+--scopes=cloud-platform \
 --identity-namespace=$3.svc.id.goog
 
 # with the cluster provisioned, get its credentials and set up kubectl
