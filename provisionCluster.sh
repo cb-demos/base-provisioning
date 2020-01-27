@@ -28,14 +28,14 @@ kubectl create clusterrolebinding tiller \
   --serviceaccount=kube-system:tiller
 
 # kubectl rollout status deployment tiller-deploy --namespace kube-system 
-sleep 120
+# sleep 120
 
 echo '----> Initializing Helm'
 helm init --wait --service-account tiller
 helm repo add cloudbees https://charts.cloudbees.com/public/cloudbees
 helm repo update
 
-sleep 120
+# sleep 120
 
 echo '----> Creating the nginx namespace'
 kubectl create namespace nginx 
