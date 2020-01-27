@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo '----> Provisioning cluster '$1' in region '$2'.'
+echo '----> Provisioning cluster '$1' in region '$2' in project '$3'.'
 
 # provision a GKE cluster
 gcloud container clusters create $1 \
@@ -11,12 +11,14 @@ gcloud container clusters create $1 \
 --password=cloudbeesdemoenv \
 --region=$2 \
 --username=admin \
---verbosity=none
+--verbosity=none \
+--scopes=cloud-platform
+--identity-namespace=$3.svc.id.goog
 
 # with the cluster provisioned, get its credentials and set up kubectl
 # probably need to change the project name. not sure if it should be a parameter.
 echo '----> Setting up kubectl'
-gcloud container clusters get-credentials $1 --zone $2 --project core-flow-research
+gcloud container clusters get-credentials $1 --zone $2 --project $3
 
 # set up tiller so we can use Helm
 echo '----> Setting up Tiller'
@@ -94,6 +96,15 @@ echo '----> Creating the flow namespace'
 kubectl create namespace flow 
 kubectl config set-context --current --namespace=flow
 
+# Create service account so gcloud commands can run
+kubectl create serviceaccount gcloud-sa -n flow
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:$3.svc.id.goog[flow/gcloud-sa]" \
+  gcloud-sa@$3.iam.gserviceaccount.com
+kubectl annotate serviceaccount -n flow gcloud-sa \
+  iam.gke.io/gcp-service-account=gcloud-sa@$3.iam.gserviceaccount.com
+  
 # Now install Flow with the Helm chart
 echo '----> Installing Flow with the Helm chart'
 helm install \
