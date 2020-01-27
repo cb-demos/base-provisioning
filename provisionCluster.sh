@@ -3,7 +3,7 @@
 echo '----> Provisioning cluster '$1' in region '$2' in project '$3'.'
 
 # provision a GKE cluster
-gcloud container clusters create $1 \
+gcloud beta container clusters create $1 \
 --cluster-version=1.13.12-gke.8 \
 --issue-client-certificate \
 --machine-type=n1-standard-8 \
