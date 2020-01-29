@@ -1,22 +1,23 @@
 #!/bin/bash
 
-echo '----> Provisioning cluster '$1' in region '$2'.'
+echo '----> Provisioning cluster '$1' in region '$2' in project '$3'.'
 
 # provision a GKE cluster
-gcloud container clusters create $1 \
+gcloud beta container clusters create $1 \
 --cluster-version=1.13.12-gke.8 \
 --issue-client-certificate \
 --machine-type=n1-standard-8 \
 --num-nodes=1 \
---password=cloudbeesdemoenv \
 --region=$2 \
 --username=admin \
---verbosity=none
+--verbosity=none \
+--scopes=cloud-platform \
+--identity-namespace=$3.svc.id.goog
 
 # with the cluster provisioned, get its credentials and set up kubectl
 # probably need to change the project name. not sure if it should be a parameter.
 echo '----> Setting up kubectl'
-gcloud container clusters get-credentials $1 --zone $2 --project core-flow-research
+gcloud container clusters get-credentials $1 --zone $2 --project $3
 
 # set up tiller so we can use Helm
 echo '----> Setting up Tiller'
@@ -27,14 +28,14 @@ kubectl create clusterrolebinding tiller \
   --serviceaccount=kube-system:tiller
 
 # kubectl rollout status deployment tiller-deploy --namespace kube-system 
-sleep 120
+# sleep 120
 
 echo '----> Initializing Helm'
 helm init --wait --service-account tiller
 helm repo add cloudbees https://charts.cloudbees.com/public/cloudbees
 helm repo update
 
-sleep 120
+# sleep 120
 
 echo '----> Creating the nginx namespace'
 kubectl create namespace nginx 
@@ -94,6 +95,15 @@ echo '----> Creating the flow namespace'
 kubectl create namespace flow 
 kubectl config set-context --current --namespace=flow
 
+# Create service account so gcloud commands can run
+kubectl create serviceaccount gcloud-sa -n flow
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:$3.svc.id.goog[flow/gcloud-sa]" \
+  gcloud-sa@$3.iam.gserviceaccount.com
+kubectl annotate serviceaccount -n flow gcloud-sa \
+  iam.gke.io/gcp-service-account=gcloud-sa@$3.iam.gserviceaccount.com
+  
 # Now install Flow with the Helm chart
 echo '----> Installing Flow with the Helm chart'
 helm install \
@@ -114,6 +124,10 @@ until [ "$FLOW_SERVER_STATUS" == "$TARGET_STATUS" ]; do
   sleep 15;
   FLOW_SERVER_STATUS=$(kubectl exec $FLOW_SERVER_POD -- /opt/cbflow/health-check);
 done
+
+# Patching agent deployment
+kubectl patch deployment flow-bound-agent -p "$(cat flowAgentPatch.yaml)"
+
 
 # Create Users and resourcePools
 echo '----> Adding users to Flow'
