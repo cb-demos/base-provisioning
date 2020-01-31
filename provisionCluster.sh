@@ -154,6 +154,29 @@ sleep 120
 
 FLOW_URL=$(kubectl get svc | grep nginx-ingress-controller | awk '{print $4}')
 
+
+# deploy cert-manager
+echo '----> Deploying cert-manager'
+kubectl create namespace cert-manager
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.13.0/cert-manager.yaml
+kubectl apply -f cert-manager/cluster-issuers.yaml
+
+# patch ingresses
+echo '----> Patching and annotating ingress resources'
+kubectl -n cloudbees-core patch ingress cjoc -p "$(cat core/cjoc-ingress-patch.yaml)"
+kubectl -n flow patch ingress flow-ingress -p "$(cat flow/flow-ingress-patch.yaml)"
+
+# annotate ingresses
+kubectl -n cloudbees-core annotate ingress cjoc cert-manager.io/cluster-issuer="letsencrypt-prod" --overwrite=true # "letsencrypt-staging"
+kubectl -n cloudbees-core annotate ingress cjoc nginx.ingress.kubernetes.io/ssl-redirect="true" --overwrite=true
+
+kubectl -n flow annotate ingress flow-ingress cert-manager.io/cluster-issuer="letsencrypt-prod" --overwrite=true # "letsencrypt-staging"
+kubectl -n flow annotate ingress flow-ingress nginx.ingress.kubernetes.io/ssl-redirect="true" --overwrite=true
+
+kubectl -n nexus annotate ingress nexus cert-manager.io/cluster-issuer="letsencrypt-prod" --overwrite=true # "letsencrypt-staging"
+kubectl -n nexus annotate ingress nexus nginx.ingress.kubernetes.io/ssl-redirect="true" --overwrite=true
+
+
 # echo '------------------------------------------------------------------'
 # echo '----> A Kuberenetes cluster has been provisioned. It contains '
 # echo '      Core, Flow, and a sample application that uses Rollout.' 
