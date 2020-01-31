@@ -35,7 +35,11 @@ helm init --wait --service-account tiller
 helm repo add cloudbees https://charts.cloudbees.com/public/cloudbees
 helm repo update
 
-# sleep 120
+# Possible race condition; without the sleep statement I've seen the
+# nginx helm install fail with the message: 
+# "Error: Could not get apiVersions from Kubernetes: unable to retrieve the complete list of server APIs: metrics.k8s.io/v1beta1: the server is currently unable to handle the request"
+
+sleep 60
 
 echo '----> Creating the nginx namespace'
 kubectl create namespace nginx 
@@ -166,7 +170,7 @@ echo '----> Using Flow: '
 echo '      Your username and password are admin / changeme'
 echo '      Visit https://'$FLOW_URL'/auth/# to log in.'
 echo '------------------------------------------------------------------'
-echo '----> Using Nexus: '
-echo '      Your initial password is '$NEXUS_PASSWORD
-echo '      Visit https://'$NEXUS_URL 'to log in.'
-echo '------------------------------------------------------------------'
+# echo '----> Using Nexus: '
+# echo '      Your initial password is '$NEXUS_PASSWORD
+# echo '      Visit https://'$NEXUS_URL 'to log in.'
+# echo '------------------------------------------------------------------'
