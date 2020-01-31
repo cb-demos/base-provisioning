@@ -21,7 +21,10 @@ Once they're installed, run `gcloud auth login` to log in to your GCP account.
 
 You also need V2 of [Helm](https://v2.helm.sh) installed. The script handles the 
 details of installing Tiller
-and initializing Helm, but you have to install Helm itself before the script will work. 
+and initializing Helm, but you have to install Helm itself before the script will work.
+**THIS SCRIPT DOES NOT WORK WITH HELM V3.** We're working on it, but for now, you've got
+to install Helm V2. (If you're on a Mac, you can use `brew install helm@2` to get the
+correct version.)
 
 ## What the script does
 
@@ -51,13 +54,15 @@ To this point the script has been tested in a Bash shell on Mac Catalina and Fed
 work on any other distro without modification. I don't have a Windows license, so I can't say whether 
 it works in Cygwin or not. 
 
-To run the script you need a *name* for the cluster and a *GCP region*. Here's an example: 
+To run the script you need a *name* for the cluster, a *GCP region*, and a GCP
+*project name*. Here's an example: 
 
 ```
-./provisionCluster.sh doug us-east1-b
+./provisionCluster.sh doug us-east1 core-flow-research
 ```
 
-This creates a cluster named `doug` in the `us-east1-b` region. The output of the script
+This creates a cluster named `doug` in the `us-east1` region for the `core-flow-research`
+project. The output of the script
 shows the details of the user IDs and passwords you'll need to get started. 
 When it's finished, you'll see something like this: 
 
