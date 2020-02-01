@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ "$#" -ne 3 ]; then 
+   echo 'This script requires three parameters: a cluster name, a GCP region, '
+   echo 'and a project name. The project name you want is probably core-flow-research.'
+   exit
+fi
+   
 echo '----> Provisioning cluster '$1' in region '$2' in project '$3'.'
 
 # provision a GKE cluster

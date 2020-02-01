@@ -22,6 +22,7 @@ Once they're installed, run `gcloud auth login` to log in to your GCP account.
 You also need V2 of [Helm](https://v2.helm.sh) installed. The script handles the 
 details of installing Tiller
 and initializing Helm, but you have to install Helm itself before the script will work.
+
 **THIS SCRIPT DOES NOT WORK WITH HELM V3.** We're working on it, but for now, you've got
 to install Helm V2. (If you're on a Mac, you can use `brew install helm@2` to get the
 correct version.)
@@ -115,4 +116,5 @@ provisioning process.
 
 Finally, **_DATA_** is just as important as having a running cluster and a working 
 infrastructure. If the data doesn't help us tell a story, everything else is useless. 
-A Flow dashboard filled with boxes that read "No Data Available" is a failure. Some of the data work is already done, other things will probably take a while. 
+A Flow dashboard filled with boxes that read "No Data Available" is a failure.
+Some of the data work is already done, other things will probably take a while. 
