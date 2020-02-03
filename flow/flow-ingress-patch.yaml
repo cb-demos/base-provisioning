@@ -1,0 +1,5 @@
+spec:
+  tls:
+  - hosts:
+    - flow.REPLACE_DOMAIN_NAME
+    secretName: flow-tls
