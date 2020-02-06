@@ -1,0 +1,20 @@
+[
+	{
+		"ConfigName": "alpha",
+		"PluginName": "EC-Jenkins",
+		"Username": "admin",
+		"Password": "changeme",
+		"Parameters": {
+			"server": "https://core.cb-demos.io/alpha"
+		}
+	},
+	{
+		"ConfigName": "beta",
+		"PluginName": "EC-Jenkins",
+		"Username": "admin",
+		"Password": "changeme",
+		"Parameters": {
+			"server": "https://core.cb-demos.io/beta"
+		}
+	}
+]
