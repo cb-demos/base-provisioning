@@ -9,12 +9,12 @@
 		}
 	},
 	{
-		"ConfigName": "beta",
+		"ConfigName": "bravo",
 		"PluginName": "EC-Jenkins",
 		"Username": "admin",
 		"Password": "changeme",
 		"Parameters": {
-			"server": "https://core.cb-demos.io/beta"
+			"server": "https://core.cb-demos.io/bravo"
 		}
 	}
 ]

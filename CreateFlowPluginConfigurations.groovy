@@ -48,7 +48,7 @@ PluginConfigs.each { conf ->
 	def ConfigPropertySheet = getProperty(propertyName: "ec_config/configLocation", projectName: proj).value
 	// Create a list of existing configurations in this plugin project
 	def ExistingConfigs = []
-	getProperties(propertySheetId: getProperty(ConfigPropertySheet).propertySheetId).property.each {
+	getProperties(propertySheetId: getProperty(ConfigPropertySheet, projectName: proj).propertySheetId).property.each {
 		ExistingConfigs.push(it.name)
 	}
 
